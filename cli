@@ -119,7 +119,7 @@ build)
             shift 1
             ;;
         --)
-            echo "Using all default variables ${system}-${compiler}-${build}-${target}"
+            # echo "Using all default variables ${system}-${compiler}-${build}-${target}"
             break
             ;;
         *)
@@ -129,6 +129,8 @@ build)
         esac
     done
 
+    echo ${system}-${compiler}-${build}-${target}
+
     if [[ ${compiler} = "intel" ]]; then
         source /opt/intel/oneapi/setvars.sh
         if [[ ${system} = "mac" ]]; then
@@ -137,7 +139,6 @@ build)
         fi
     fi
 
-    echo ${system}-${compiler}-${build}-${target}
 
     case "$system" in
     "linux" | "mac")
