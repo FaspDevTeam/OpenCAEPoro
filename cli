@@ -36,6 +36,7 @@ Example:
     cli build -c intel -b Debug -t clean
 
 EOF
+    exit 0
 }
 
 helperTest() {
@@ -55,6 +56,7 @@ Example:
     cli test -c intel -b Debug -m -u
 
 EOF
+    exit 0
 }
 
 helperDoc() {
@@ -72,6 +74,7 @@ Example:
     cli doc -b latexpdf
 
 EOF
+    exit 0
 }
 
 helperCLI() {
@@ -86,15 +89,22 @@ Use -h or --help option to check the usage for each of the
 subcommand.
 
 EOF
+    exit 0
 }
 
+echo $1
 case "$1" in
 build)
     echo "Compile the program"
     shift
 
-    OPT=$(getopt -o t:c:b:h --long target:,compiler:,build:,help -n 'cli build' -- "$@")
-    eval set -- "${OPT}"
+    if [[ ${system} == "linux" ]]; then
+        OPT=$(getopt -o t:c:b:h --long target:,compiler:,build:,help -n 'cli build' -- "$@")
+        eval set -- "${OPT}"
+    elif [[ ${system} == "mac" ]]; then
+        OPT=$(getopt t:c:b:h "$@")
+        set -- $OPT
+    fi
 
     [ $# -le 1 ] && {
         helperBuild
@@ -139,7 +149,6 @@ build)
         fi
     fi
 
-
     case "$system" in
     "linux" | "mac")
         cmake --preset="${system}-${compiler}-${build}" -S "."
@@ -166,8 +175,13 @@ test)
     echo "Test the program"
     shift
 
-    OPT=$(getopt -o t:c:b:hum --long target:,compiler:,build:,help,unit,benchmark -n 'cli build' -- "$@")
-    eval set -- "${OPT}"
+    if [[ ${system} == "linux" ]]; then
+        OPT=$(getopt -o t:c:b:hum --long target:,compiler:,build:,help,unit,benchmark -n 'cli build' -- "$@")
+        eval set -- "${OPT}"
+    elif [[ ${system} == "mac" ]]; then
+        OPT=$(getopt t:c:b:hum "$@")
+        set -- $OPT
+    fi
 
     [ $# -le 1 ] && {
         helperTest
@@ -212,6 +226,8 @@ test)
         esac
     done
 
+    echo ${system}-${compiler}-${build}-${target}
+
     if [[ ${compiler} = "intel" ]]; then
         source /opt/intel/oneapi/setvars.sh
         if [[ ${system} = "mac" ]]; then
@@ -219,8 +235,6 @@ test)
             export CXX=icpc
         fi
     fi
-
-    echo ${system}-${compiler}-${build}-${target}
 
     case "$system" in
     "linux" | "mac")
@@ -246,8 +260,13 @@ doc)
     echo "Build the doc"
     shift
 
-    OPT=$(getopt -o hb: --long help,build: -n 'cli doc' -- "$@")
-    eval set -- "${OPT}"
+    if [[ ${system} == "linux" ]]; then
+        OPT=$(getopt -o hb: --long help,build: -n 'cli doc' -- "$@")
+        eval set -- "${OPT}"
+    elif [[ ${system} == "mac" ]]; then
+        OPT=$(getopt b:h "$@")
+        set -- $OPT
+    fi
 
     [ $# -le 1 ] && {
         helperDoc
